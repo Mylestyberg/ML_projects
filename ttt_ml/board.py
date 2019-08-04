@@ -7,14 +7,49 @@ class ttt_board():
                 6: (2, 0), 7: (2, 1), 8: (2, 2)}
 
     # going to return new observation, reward, and whether player has won
-    def make_move(self, action):
-        input = self.postions.get(action)
+    def make_move(self, action,player):
+        x,y = self.postions.get(action)
+        
+        self.board[x][y] = 1
+
+        new_env = self.board.copy()
 
 
 
-    #check winner
-    def check_win_state(self):
+    def checkWinningStatus(self):
+        potentials_winners = []
+        potentials_winners.append(self.board[0][0] + self.board[0][1] + self.board[0][2])
+        potentials_winners.append(self.board[1][0] + self.board[1][1] + self.board[1][2])
+        potentials_winners.append(self.board[2][0] + self.board[2][1] + self.board[2][2])
+        potentials_winners.append(self.board[0][0] + self.board[1][0] + self.board[2][0])
+        potentials_winners.append(self.board[0][1] + self.board[1][1] + self.board[2][1])
+        potentials_winners.append(self.board[0][2] + self.board[1][2] + self.board[2][2])
+        potentials_winners.append(self.board[0][0] + self.board[1][1] + self.board[2][2])
+        potentials_winners.append(self.board[0][2] + self.board[1][1] + self.board[2][0])
 
+        return self.get_winner(potentials_winners)
+
+    def get_winner(self, potential_winner):
+        for addUp in potential_winner:
+            if (addUp == 3):
+                self.status = "NAUGHTS WIN"
+                return True
+            elif (addUp == -3):
+                self.status = "CROSSES WIN"
+                return True
+            elif self.check_if_table_full():
+                self.status = "DRAW"
+                return True
+            else:
+                return False
+
+    def check_if_table_full(self):
+        if ((abs(self.board[0][0]) + abs(self.board[0][1]) + abs(self.board[0][2]) +
+             abs(self.board[1][0]) + abs(self.board[1][1]) + abs(self.board[1][2]) +
+             abs(self.board[2][0]) + abs(self.board[2][1]) + abs(self.board[2][2])) == 9):
+            return True
+        else:
+            return False
 
     def reshape_for_nn(self,board):
        reshape_board = np.zeros(27)

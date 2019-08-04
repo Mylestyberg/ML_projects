@@ -2,6 +2,9 @@ import numpy as np
 from tqdm import tqdm
 
 
+EPISODES = 20_000
+
+
 WIN_VALUE = 1.0  # type: float
 DRAW_VALUE = 0.5  # type: float
 LOSS_VALUE = 0.0  # type: float
@@ -96,7 +99,9 @@ class ttt_board():
 
 
 
-
+for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
+    done = False
+    #while not done:
 
 
 

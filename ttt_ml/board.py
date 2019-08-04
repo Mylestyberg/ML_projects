@@ -1,4 +1,13 @@
 import numpy as np
+from tqdm import tqdm
+
+
+WIN_VALUE = 1.0  # type: float
+DRAW_VALUE = 0.5  # type: float
+LOSS_VALUE = 0.0  # type: float
+
+learning_rate = 0.9
+value_discount = 0.95
 class ttt_board():
     board = np.zeros((3,3))
 
@@ -7,12 +16,29 @@ class ttt_board():
                 6: (2, 0), 7: (2, 1), 8: (2, 2)}
 
     # going to return new observation, reward, and whether player has won
-    def make_move(self, action,player):
+    def make_move(self, action):
         x,y = self.postions.get(action)
-        
+
         self.board[x][y] = 1
 
         new_env = self.board.copy()
+
+        done,status = self.checkWinningStatus()
+
+        if status == "CROSSES WIN":
+           reward= 1  # type: float
+        elif status == "NAUGHTS WIN":
+            reward = -1
+        elif status == "DRAW":
+            reward = 0.5  # type: float
+        else:
+            reward = 0
+
+        return new_env, done, reward
+
+
+
+
 
 
 
@@ -33,15 +59,15 @@ class ttt_board():
         for addUp in potential_winner:
             if (addUp == 3):
                 self.status = "NAUGHTS WIN"
-                return True
+                return True, self.status
             elif (addUp == -3):
                 self.status = "CROSSES WIN"
-                return True
+                return True,self.status
             elif self.check_if_table_full():
                 self.status = "DRAW"
-                return True
+                return True, self.status
             else:
-                return False
+                return False, "ON_GOING"
 
     def check_if_table_full(self):
         if ((abs(self.board[0][0]) + abs(self.board[0][1]) + abs(self.board[0][2]) +

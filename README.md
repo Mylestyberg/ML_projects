@@ -4,7 +4,7 @@
  
  Tic Tac Toe using Deep Q learning - Neural Network
  
- Tic Tac Toe using Deep Q learning - CNN
+ Future Project - Tic Tac Toe using Deep Q learning - CNN
  
  
- Asphalt (Racing Game) - Using DQN with CNN 
+ Future Project - Asphalt (Racing Game) - Using DQN with CNN 

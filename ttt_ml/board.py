@@ -9,8 +9,7 @@ WIN_VALUE = 1.0  # type: float
 DRAW_VALUE = 0.5  # type: float
 LOSS_VALUE = 0.0  # type: float
 
-learning_rate = 0.9
-value_discount = 0.95
+
 class ttt_board():
     board = np.zeros((3,3))
 
@@ -99,9 +98,6 @@ class ttt_board():
 
 
 
-for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
-    done = False
-    #while not done:
 
 
 

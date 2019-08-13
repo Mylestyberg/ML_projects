@@ -1,10 +1,26 @@
 import random
 from collections import deque
 import  numpy as np
+from tqdm import tqdm
 
+from ttt_ml import board
+from ttt_ml.board import ttt_board
+
+
+
+
+from ttt_ml.tensor_board import ModifiedTensorBoard
 
 learning_rate = 0.9
 value_discount = 0.95
+EPISODES = 20_000
+epsilon = 1  # not a constant, going to be decayed
+EPSILON_DECAY = 0.99975
+MIN_EPSILON = 0.001
+
+#  Stats settings
+AGGREGATE_STATS_EVERY = 50  # episodes
+
 
 import keras.backend.tensorflow_backend as backend
 from keras.models import Sequential
@@ -15,6 +31,8 @@ REPLAY_MEMORY_SIZE = 1000
 MIN_REPLAY_MEMORY_SIZE = 100
 MINIBATCH_SIZE = 5
 UPDATE_TARGET_EVERY = 5
+import time
+MODEL_NAME = 'TTT'
 
 class DQNAgent:
 
@@ -36,7 +54,7 @@ class DQNAgent:
 
         # An array with last n steps for training
         self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
-
+        self.tensorboard = ModifiedTensorBoard(log_dir=f"logs/{MODEL_NAME}-{int(time.time())}")
         self.target_update_counter = 0
 
     def update_replay_memory(self, transition):
@@ -95,7 +113,66 @@ class DQNAgent:
 
     def get_qs(self, state):
      return self.model.predict(np.array(state))
+global action
+
+agent = DQNAgent()
+
+
+##Each episode will be a game and when finised, then check when to train with that info
+
+aboard =  board.ttt_board.board
+
+for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
+    episode_reward = 0
+    step = 1
+    current_state = board.ttt_board().reset(aboard)
+    done = False
 
 
 
+    while not done :
+
+
+
+        action = -50
+        while not ttt_board().check_if_position(action) and not done:
+            board.ttt_board().make_random_move(current_state)
+
+            #dqn make move
+            if np.random.random() > epsilon:
+                # Get action from Q table
+                action = np.argmax(agent.get_qs(current_state))
+            else:
+                # Get random action
+                action = np.random.randint(0, 9)
+
+            if not ttt_board().check_if_position(action):
+                agent.get_qs(current_state)[action] = -1
+
+        new_state, reward, done = board.ttt_board().make_move(action,current_state)
+
+        # comp make move, later check if done as well, change true to a variable break
+
+
+
+
+
+
+
+
+        # Transform new continous state to new discrete state and count reward
+        episode_reward += reward
+
+
+        # Every step we update replay memory and train main network
+        agent.update_replay_memory((current_state, action, reward, new_state, done))
+        agent.train(done, step)
+
+        current_state = new_state
+        step += 1
+
+
+    if epsilon > MIN_EPSILON:
+        epsilon *= EPSILON_DECAY
+        epsilon = max(MIN_EPSILON, epsilon)
 

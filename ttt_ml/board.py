@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-EPISODES = 20_000
+
 
 
 WIN_VALUE = 1.0  # type: float
@@ -18,14 +18,16 @@ class ttt_board():
                 6: (2, 0), 7: (2, 1), 8: (2, 2)}
 
     # going to return new observation, reward, and whether player has won
-    def make_move(self, action):
+    def make_move(self, action,aboard):
         x,y = self.postions.get(action)
 
-        self.board[x][y] = 1
 
-        new_env = self.board.copy()
 
-        done,status = self.checkWinningStatus()
+        new_env = aboard.copy()
+
+        new_env[x][y] = 1
+
+        done,status = self.checkWinningStatus(new_env)
 
         if status == "CROSSES WIN":
            reward= 1  # type: float
@@ -40,24 +42,26 @@ class ttt_board():
 
 
 
+    def reset(self,board):
+        board = np.zeros((3,3))
+        return board
 
 
 
-
-    def checkWinningStatus(self):
+    def checkWinningStatus(self,aboard):
         potentials_winners = []
-        potentials_winners.append(self.board[0][0] + self.board[0][1] + self.board[0][2])
-        potentials_winners.append(self.board[1][0] + self.board[1][1] + self.board[1][2])
-        potentials_winners.append(self.board[2][0] + self.board[2][1] + self.board[2][2])
-        potentials_winners.append(self.board[0][0] + self.board[1][0] + self.board[2][0])
-        potentials_winners.append(self.board[0][1] + self.board[1][1] + self.board[2][1])
-        potentials_winners.append(self.board[0][2] + self.board[1][2] + self.board[2][2])
-        potentials_winners.append(self.board[0][0] + self.board[1][1] + self.board[2][2])
-        potentials_winners.append(self.board[0][2] + self.board[1][1] + self.board[2][0])
+        potentials_winners.append(aboard[0][0] + aboard[0][1] + aboard[0][2])
+        potentials_winners.append(aboard[1][0] + aboard[1][1] + aboard[1][2])
+        potentials_winners.append(aboard[2][0] + aboard[2][1] + aboard[2][2])
+        potentials_winners.append(aboard[0][0] + aboard[1][0] + aboard[2][0])
+        potentials_winners.append(aboard[0][1] + aboard[1][1] + aboard[2][1])
+        potentials_winners.append(aboard[0][2] + aboard[1][2] + aboard[2][2])
+        potentials_winners.append(aboard[0][0] + aboard[1][1] + aboard[2][2])
+        potentials_winners.append(aboard[0][2] + aboard[1][1] + aboard[2][0])
 
-        return self.get_winner(potentials_winners)
+        return self.get_winner(potentials_winners,aboard)
 
-    def get_winner(self, potential_winner):
+    def get_winner(self, potential_winner,aboard):
         for addUp in potential_winner:
             if (addUp == 3):
                 self.status = "NAUGHTS WIN"
@@ -65,21 +69,21 @@ class ttt_board():
             elif (addUp == -3):
                 self.status = "CROSSES WIN"
                 return True,self.status
-            elif self.check_if_table_full():
+            elif self.check_if_table_full(aboard):
                 self.status = "DRAW"
                 return True, self.status
             else:
                 return False, "ON_GOING"
 
-    def check_if_table_full(self):
-        if ((abs(self.board[0][0]) + abs(self.board[0][1]) + abs(self.board[0][2]) +
-             abs(self.board[1][0]) + abs(self.board[1][1]) + abs(self.board[1][2]) +
-             abs(self.board[2][0]) + abs(self.board[2][1]) + abs(self.board[2][2])) == 9):
+    def check_if_table_full(self,aboard):
+        if ((abs(aboard[0][0]) + abs(aboard[0][1]) + abs(aboard[0][2]) +
+             abs(aboard[1][0]) + abs(aboard[1][1]) + abs(aboard[1][2]) +
+             abs(aboard[2][0]) + abs(aboard[2][1]) + abs(aboard[2][2])) == 9):
             return True
         else:
             return False
 
-    def reshape_for_nn(self,board):
+    def reshape_for_nn(self,aboard):
        reshape_board = np.zeros(27)
        count = 27
        while (count != 0):
@@ -92,9 +96,38 @@ class ttt_board():
         elif  count % 9 == 1:
             check=0
 
-        for x in np.nditer(self.board):
+        for x in np.nditer(aboard):
             if x == check:
                 reshape_board[check] = x
+
+
+    ### make move, by first checking if move can be done
+    def make_random_move(self,aboard):
+
+      rand_move = np.random.randint(0,9)
+
+      if self.check_if_position(rand_move):
+          x, y = self.postions.get(rand_move)
+
+          aboard[x][y] = -1
+      else:
+          self.make_random_move(aboard)
+
+
+
+    def check_if_legal_move(self,position):
+        if self.check_if_position(position) or (position>9 or position<0):
+            return False
+
+    def check_if_position(self,position):
+        pieces = {1,-1}
+        if position<0:
+          return False
+        elif  pieces in  self.postions[position]:
+            return  False
+        else:
+           return True
+
 
 
 

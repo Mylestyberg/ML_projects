@@ -106,7 +106,7 @@ class ttt_board():
 
       rand_move = np.random.randint(0,9)
 
-      if self.check_if_position(rand_move):
+      if not self.check_if_position(rand_move,aboard):
           x, y = self.postions.get(rand_move)
 
           aboard[x][y] = -1
@@ -115,18 +115,18 @@ class ttt_board():
 
 
 
-    def check_if_legal_move(self,position):
-        if self.check_if_position(position) or (position>9 or position<0):
+    def check_if_legal_move(self,position,aboard):
+        if self.check_if_position(position,aboard) or (position>9 or position<0):
             return False
 
-    def check_if_position(self,position):
+    def check_if_position(self,position,aboard):
         pieces = {1,-1}
         if position<0:
-          return False
-        elif  pieces in  self.postions[position]:
-            return  False
+          return True
+        elif  pieces == aboard[self.postions[position]]:
+            return  True
         else:
-           return True
+           return False
 
 
 

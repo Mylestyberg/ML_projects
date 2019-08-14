@@ -135,18 +135,22 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
         action = -50
 
-        board.ttt_board().make_random_move(current_state)
+        done,status = board.ttt_board().make_random_move(current_state)
+
+        if done:
+            break
 
 
         is_place = True
         #dqn make move
         while is_place:
             if np.random.random() > epsilon:
-                action = np.argmax(agent.get_qs(current_state))
+                action = np.argmax(agent.get_qs(ttt_board().reshape_for_nn(current_state)))
             else:
                 action = np.random.randint(0, 9)
             if ttt_board().check_if_position(action, current_state):
-                agent.get_qs(current_state)[action] = -1
+                 actions = agent.get_qs(ttt_board().reshape_for_nn(current_state))
+                 actions[0,action] = -1
             elif not  ttt_board().check_if_position(action, current_state):
                 is_place = False
 

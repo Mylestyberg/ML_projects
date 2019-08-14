@@ -62,19 +62,20 @@ class ttt_board():
         return self.get_winner(potentials_winners,aboard)
 
     def get_winner(self, potential_winner,aboard):
+        winner = False
+        self.status = "ON_GOING"
         for addUp in potential_winner:
             if (addUp == 3):
                 self.status = "NAUGHTS WIN"
-                return True, self.status
+                winner = True
             elif (addUp == -3):
                 self.status = "CROSSES WIN"
-                return True,self.status
-            elif self.check_if_table_full(aboard):
-                self.status = "DRAW"
-                return True, self.status
-            else:
-                return False, "ON_GOING"
+                winner = True
+        if self.check_if_table_full(aboard):
+            self.status = "DRAW"
+            winner = True
 
+        return winner, self.status
     def check_if_table_full(self,aboard):
         if ((abs(aboard[0][0]) + abs(aboard[0][1]) + abs(aboard[0][2]) +
              abs(aboard[1][0]) + abs(aboard[1][1]) + abs(aboard[1][2]) +
@@ -119,6 +120,9 @@ class ttt_board():
           aboard[x][y] = -1
       else:
           self.make_random_move(aboard)
+
+
+      return self.checkWinningStatus(aboard)
 
 
 

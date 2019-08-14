@@ -84,24 +84,31 @@ class ttt_board():
             return False
 
     def reshape_for_nn(self,aboard):
-       reshape_board = np.zeros(27)
-       count = 27
-       while (count != 0):
-        check = 0
+         reshape_board = np.zeros(27)
+         count = 0
+         while (count != 27):
+            check = 0
 
-        if count % 9 == 3:
-            check = 1
-        elif count % 9 == 2:
-            check = -1
-        elif  count % 9 == 1:
-            check=0
+            if count / 9>= 2:
+                check = -1
+            elif count / 9 >= 1:
+                check = 1
+            elif  count / 9 < 1:
+                check= 0
+            pointer = count
+            for x in np.nditer(aboard):
 
-        for x in np.nditer(aboard):
-            if x == check:
-                reshape_board[check] = x
+                if x == check:
+                    reshape_board[pointer] = 1
+
+                pointer = pointer + 1
+
+            count = count + 9
+
+         return reshape_board.reshape(1,-1)
 
 
-    ### make move, by first checking if move can be done
+
     def make_random_move(self,aboard):
 
       rand_move = np.random.randint(0,9)
@@ -120,10 +127,11 @@ class ttt_board():
             return False
 
     def check_if_position(self,position,aboard):
+        f = aboard[self.postions[position]]
         pieces = {1,-1}
         if position<0:
           return True
-        elif  pieces == aboard[self.postions[position]]:
+        elif  aboard[self.postions[position]] in pieces:
             return  True
         else:
            return False

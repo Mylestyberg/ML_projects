@@ -38,8 +38,8 @@ class DQNAgent:
 
     def create_model(self):
         model = Sequential()
-        model.add(Dense(54, input_dim=27, activation='relu'))
-        model.add(Dense(9, input_dim=54, activation='relu'))
+        model.add((Dense(54, input_shape=(27,), activation='relu')))
+        model.add(Dense(9,input_dim=54, activation='relu'))
         model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['accuracy'])
         return model
 
@@ -142,7 +142,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         #dqn make move
         while is_place:
             if np.random.random() > epsilon:
-              action = np.argmax(agent.get_qs(current_state))
+                action = np.argmax(agent.get_qs(current_state))
             else:
                 action = np.random.randint(0, 9)
             if ttt_board().check_if_position(action, current_state):

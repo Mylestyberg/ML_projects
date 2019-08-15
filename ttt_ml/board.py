@@ -117,7 +117,7 @@ class ttt_board():
     def make_random_move(self,aboard):
 
 
-       newboard = aboard.copy()
+
 
 
        while True:
@@ -130,11 +130,12 @@ class ttt_board():
 
        done, status = self.checkWinningStatus(aboard)
 
+       newboard = aboard.copy()
+
        if done:
-           return True, newboard
+           return True,  -1,newboard
 
-       return False, newboard
-
+       return False,0, newboard
 
 
 

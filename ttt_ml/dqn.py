@@ -58,9 +58,10 @@ class DQNAgent:
         self.target_update_counter = 0
 
     def update_replay_memory(self, transition):
-        self.replay_memory.append(transition)
+        for transitions in transition:
+         self.replay_memory.append(transitions)
 
-    def train(self, terminal_state, step):
+    def train(self, terminal_state):
         # Start training only if certain number of samples is already saved
         if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
             return
@@ -124,59 +125,53 @@ aboard =  board.ttt_board.board
 global reward
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     episode_reward = 0
-    step = 1
+
     current_state = board.ttt_board().reset(aboard)
     done = False
-
+    history = deque(maxlen=REPLAY_MEMORY_SIZE)
+    index = 0
 
     while not done :
-        is_place = True
+        can_place_piece = False
 
-
-        action = -50
-
-        done,new_rnd_state= board.ttt_board().make_random_move(current_state)
-
-        if done:
-            is_place= False
-            current_state = new_rnd_state
-
-
-
-
-        #dqn make move
-        while is_place:
-            if np.random.random() > epsilon:
-                action = np.argmax(agent.get_qs(ttt_board().reshape_for_nn(current_state)))
-            else:
-                action = np.random.randint(0, 9)
-            if ttt_board().check_if_position(action, current_state):
-                 actions = agent.get_qs(ttt_board().reshape_for_nn(current_state))
-                 actions[0,action] = -1
-            elif not  ttt_board().check_if_position(action, current_state):
-                is_place = False
+        done,reward, cboard= board.ttt_board().make_random_move(current_state)
 
         if not done:
-         new_state, reward, done = board.ttt_board().make_move(action,current_state)
+        #dqn make move
+            while not can_place_piece:
+                if np.random.random() > epsilon:
+                    action = np.argmax(agent.get_qs(ttt_board().reshape_for_nn(current_state)))
+                else:
+                    action = np.random.randint(0, 9)
+                if ttt_board().check_if_position(action, current_state): ##if postion is taken
+                     actions = agent.get_qs(ttt_board().reshape_for_nn(current_state))
+                     actions[0,action] = -1
+                elif not  ttt_board().check_if_position(action, current_state):
+                    can_place_piece = True
+                    new_state, done, reward = board.ttt_board().make_move(action,current_state)
 
 
 
 
 
 
-
-
-
-        # Transform new continous state to new discrete state and count reward
+        history.append((current_state, action, reward, new_state, done))
+        index+=1
         episode_reward += reward
+        current_state = new_state.copy()
 
 
-        # Every step we update replay memory and train main network
-        agent.update_replay_memory((current_state, action, reward, new_state, done))
-        agent.train(done, step)
+        if done:
 
-        current_state = new_state
-        step += 1
+            if reward == -1 or reward==0.5:
+               f= history.pop()
+               print()
+
+
+            agent.update_replay_memory(history)
+            agent.train(done)
+
+
 
 
     if epsilon > MIN_EPSILON:

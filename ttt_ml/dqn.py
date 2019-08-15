@@ -139,7 +139,8 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
         if done:
             is_place= False
-            new_state = new_rnd_state
+            current_state = new_rnd_state
+
 
 
 
@@ -155,8 +156,8 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
             elif not  ttt_board().check_if_position(action, current_state):
                 is_place = False
 
-
-            new_state, reward, done = board.ttt_board().make_move(action,current_state)
+        if not done:
+         new_state, reward, done = board.ttt_board().make_move(action,current_state)
 
 
 

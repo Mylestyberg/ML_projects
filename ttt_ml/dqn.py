@@ -121,7 +121,7 @@ agent = DQNAgent()
 ##Each episode will be a game and when finised, then check when to train with that info
 
 aboard =  board.ttt_board.board
-
+global reward
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     episode_reward = 0
     step = 1
@@ -130,18 +130,19 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
 
     while not done :
-
+        is_place = True
 
 
         action = -50
 
-        done,status = board.ttt_board().make_random_move(current_state)
+        done,new_rnd_state= board.ttt_board().make_random_move(current_state)
 
         if done:
-            break
+            is_place= False
+            new_state = new_rnd_state
 
 
-        is_place = True
+
         #dqn make move
         while is_place:
             if np.random.random() > epsilon:
@@ -155,9 +156,8 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
                 is_place = False
 
 
+            new_state, reward, done = board.ttt_board().make_move(action,current_state)
 
-
-        new_state, reward, done = board.ttt_board().make_move(action,current_state)
 
 
 

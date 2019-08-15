@@ -4,7 +4,6 @@ from tqdm import tqdm
 
 
 
-
 WIN_VALUE = 1.0  # type: float
 DRAW_VALUE = 0.5  # type: float
 LOSS_VALUE = 0.0  # type: float
@@ -30,9 +29,9 @@ class ttt_board():
         done,status = self.checkWinningStatus(new_env)
 
         if status == "CROSSES WIN":
-           reward= 1  # type: float
+           reward= -1  # type: float
         elif status == "NAUGHTS WIN":
-            reward = -1
+            reward = 1
         elif status == "DRAW":
             reward = 0.5  # type: float
         else:
@@ -62,20 +61,25 @@ class ttt_board():
         return self.get_winner(potentials_winners,aboard)
 
     def get_winner(self, potential_winner,aboard):
-        winner = False
-        self.status = "ON_GOING"
+
         for addUp in potential_winner:
             if (addUp == 3):
                 self.status = "NAUGHTS WIN"
                 winner = True
+                return winner, self.status
             elif (addUp == -3):
                 self.status = "CROSSES WIN"
                 winner = True
+                return winner, self.status
         if self.check_if_table_full(aboard):
-            self.status = "DRAW"
-            winner = True
+                self.status = "DRAW"
+                winner = True
+                return winner, self.status
 
-        return winner, self.status
+        return False, "ON_GOING"
+
+
+
     def check_if_table_full(self,aboard):
         if ((abs(aboard[0][0]) + abs(aboard[0][1]) + abs(aboard[0][2]) +
              abs(aboard[1][0]) + abs(aboard[1][1]) + abs(aboard[1][2]) +
@@ -112,17 +116,30 @@ class ttt_board():
 
     def make_random_move(self,aboard):
 
-      rand_move = np.random.randint(0,9)
-
-      if not self.check_if_position(rand_move,aboard):
-          x, y = self.postions.get(rand_move)
-
-          aboard[x][y] = -1
-      else:
-          self.make_random_move(aboard)
 
 
-      return self.checkWinningStatus(aboard)
+
+
+       while True:
+          rand_move = np.random.randint(0, 9)
+          if not self.check_if_position(rand_move,aboard):
+           x, y = self.postions.get(rand_move)
+           aboard[x][y] = -1
+           break
+
+
+       done, status = self.checkWinningStatus(aboard)
+
+       if done:
+           return True
+
+       return False
+
+
+
+
+
+
 
 
 

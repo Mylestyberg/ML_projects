@@ -69,13 +69,18 @@ class DQNAgent:
 
         minibatch = random.sample(self.replay_memory, MINIBATCH_SIZE)
 
+        current_qs_list = []
+        future_qs_list =[]
+        current_states = np.array( [ttt_board().reshape_for_nn( transition[0]) for transition in minibatch])
+        for c in current_states:
+            current_qs_list.append(self.model.predict(c))
 
-        current_states = np.array([transition[0] for transition in minibatch])
-        current_qs_list = self.model.predict(current_states)
 
+        new_current_states = np.array([ttt_board().reshape_for_nn( transition[3]) for transition in minibatch])
 
-        new_current_states = np.array([transition[3] for transition in minibatch])
-        future_qs_list = self.target_model.predict(new_current_states)
+        for n in new_current_states:
+            future_qs_list.append(self.model.predict(n))
+
 
 
 
@@ -94,10 +99,13 @@ class DQNAgent:
 
             # Update Q value for given state
             current_qs = current_qs_list[index]
-            current_qs[action] = new_q
+            current_qs = current_qs[0]
+            current_qs[action]   = new_q
 
             # And append to our training data
-            X.append(current_state)
+            xx = ttt_board().reshape_for_nn(current_state)
+            X.append(xx[0])
+
             y.append(current_qs)
 
             # Fit on all samples as one batch, log only on terminal state
@@ -164,8 +172,15 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         if done:
 
             if reward == -1 or reward==0.5:
-               f= history.pop()
-               print()
+               remove= history.pop()
+               append = history.pop()
+               append = list(append)
+               append[2] = reward
+               history.append(tuple(append))
+
+
+
+
 
 
             agent.update_replay_memory(history)

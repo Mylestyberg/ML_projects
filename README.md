@@ -7,6 +7,8 @@
  - Used experience replay
   TO DO:
   - Clean up code, with comments
+  - Add user
+  - Add min/max user
   - Add tensorboard 
   - Only save model if reward is at peak
   - Add CNN version

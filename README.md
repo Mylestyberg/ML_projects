@@ -2,7 +2,14 @@
  A space for creating ML projects
  
  
- Tic Tac Toe using Deep Q learning - Neural Network
+ Tic Tac Toe using Deep Q learning - Neural Network:
+ - Epsilon greedy
+ - Used experience replay
+  TO DO:
+  - Clean up code, with comments
+  - Add tensorboard 
+  - Only save model if reward is at peak
+  - Add CNN version
  
  Future Project - Tic Tac Toe using Deep Q learning - CNN
  

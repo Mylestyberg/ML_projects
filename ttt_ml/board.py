@@ -35,7 +35,7 @@ class ttt_board():
         elif status == "DRAW":
             reward = 0.5  # type: float
         else:
-            reward = 0
+            reward = -0.2
 
         return new_env, done, reward
 
@@ -71,7 +71,7 @@ class ttt_board():
                 self.status = "CROSSES WIN"
                 winner = True
                 return winner, self.status
-        if self.check_if_table_full(aboard):
+            if self.check_if_table_full(aboard):
                 self.status = "DRAW"
                 winner = True
                 return winner, self.status
@@ -131,9 +131,15 @@ class ttt_board():
        done, status = self.checkWinningStatus(aboard)
 
        newboard = aboard.copy()
+       reward = 0
+       if status=="DRAW":
+           reward=0
+       else:
+           reward= -1
+
 
        if done:
-           return True,  -1,newboard
+           return True,  reward,newboard
 
        return False,0, newboard
 

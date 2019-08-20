@@ -1,3 +1,4 @@
+import os
 import random
 from collections import deque
 import  numpy as np
@@ -17,6 +18,10 @@ EPISODES = 20_000
 epsilon = 1  # not a constant, going to be decayed
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
+winner =0
+loser =0
+draw = 0
+
 
 #  Stats settings
 AGGREGATE_STATS_EVERY = 50  # episodes
@@ -27,9 +32,10 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 
+
 REPLAY_MEMORY_SIZE = 1000
 MIN_REPLAY_MEMORY_SIZE = 100
-MINIBATCH_SIZE = 5
+MINIBATCH_SIZE = 15
 UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'TTT'
@@ -109,14 +115,14 @@ class DQNAgent:
             y.append(current_qs)
 
             # Fit on all samples as one batch, log only on terminal state
-            self.model.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0, shuffle=False)
+        self.model.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0, shuffle=False)
 
-            # Update target network counter every episode
-            if terminal_state:
+          # Update target network counter every episode
+        if terminal_state:
                 self.target_update_counter += 1
 
             # If counter reaches set value, update target network with weights of main network
-            if self.target_update_counter > UPDATE_TARGET_EVERY:
+        if self.target_update_counter > UPDATE_TARGET_EVERY:
                 self.target_model.set_weights(self.model.get_weights())
                 self.target_update_counter = 0
 
@@ -176,7 +182,16 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
                append = history.pop()
                append = list(append)
                append[2] = reward
+               append[4] = True
                history.append(tuple(append))
+
+
+            if reward == 1:
+                winner = winner + 1
+            elif reward == -1 :
+                loser = loser + 1
+            else:
+                draw = draw + 1
 
 
 
@@ -192,4 +207,12 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     if epsilon > MIN_EPSILON:
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
+
+    if episode % 100==0:
+        print("   ")
+        print("   ")
+        print(winner, loser, draw)
+
+agent.model.save("C:\\Users\\myles.MSI\\Documents\\models")
+
 

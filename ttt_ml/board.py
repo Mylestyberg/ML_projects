@@ -110,9 +110,33 @@ class ttt_board():
 
             count = count + 9
 
+
          return reshape_board.reshape(1,-1)
 
+    def reshape_for_cnn(self, aboard):
+        reshape_board = np.zeros(27)
+        count = 0
+        while (count != 27):
+            check = 0
 
+            if count / 9 >= 2:
+                check = -1
+            elif count / 9 >= 1:
+                check = 1
+            elif count / 9 < 1:
+                check = 0
+            pointer = count
+            for x in np.nditer(aboard):
+
+                if x == check:
+                    reshape_board[pointer] = 1
+
+                pointer = pointer + 1
+
+            count = count + 9
+
+
+        return reshape_board.reshape((3, 3, 3))
 
     def make_random_move(self,aboard):
 

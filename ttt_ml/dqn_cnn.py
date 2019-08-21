@@ -93,12 +93,12 @@ class DQNAgent:
 
         current_qs_list = []
         future_qs_list =[]
-        current_states = np.array( [ttt_board().reshape_for_nn( transition[0]) for transition in minibatch])
+        current_states = np.array( [ttt_board().reshape_for_cnn( transition[0]) for transition in minibatch])
         for c in current_states:
             current_qs_list.append(self.model.predict(c))
 
 
-        new_current_states = np.array([ttt_board().reshape_for_nn( transition[3]) for transition in minibatch])
+        new_current_states = np.array([ttt_board().reshape_for_cnn( transition[3]) for transition in minibatch])
 
         for n in new_current_states:
             future_qs_list.append(self.model.predict(n))

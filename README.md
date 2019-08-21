@@ -5,7 +5,7 @@
  Tic Tac Toe using Deep Q learning - Neural Network:
  - Epsilon greedy
  - Used experience replay
-  TO DO:
+ - TO DO:
   - Clean up code, with comments
   - Add user
   - Add min/max user

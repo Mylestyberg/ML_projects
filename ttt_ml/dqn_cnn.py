@@ -8,6 +8,7 @@ from ttt_ml import board
 from ttt_ml.board import ttt_board
 from keras.models import model_from_json
 from keras.models import load_model
+from keras.layers import Dropout, Conv2D, MaxPooling2D, Activation, Flatten
 
 
 
@@ -46,8 +47,21 @@ class DQNAgent:
 
     def create_model(self):
         model = Sequential()
-        model.add((Dense(54, input_shape=(27,), activation='relu')))
-        model.add(Dense(9,input_dim=54, activation='relu'))
+
+        model.add(Conv2D(128, (3, 3), input_shape=(3,3,3)))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(256, (3, 3)))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.2))
+
+        model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        model.add(Dense(64))
+
+        model.add(Dense(9, activation='linear'))  # ACTION_SPACE_SIZE = how many choices (9)
         model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['accuracy'])
         return model
 

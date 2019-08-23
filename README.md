@@ -20,4 +20,4 @@
 
  
  
- Future Project - Asphalt (Racing Game) - Using DQN with CNN 
+ Future Project - Project Cars (Racing Game) - Using DQN with CNN 

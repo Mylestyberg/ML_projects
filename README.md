@@ -6,6 +6,9 @@
  - Epsilon greedy
  - Used experience replay
  - CNN version 
+ 
+ 
+ 
  - TO DO:
   - Clean up code, with comments
   - Add user
@@ -14,7 +17,7 @@
   - Only save model if reward is at peak (Currently Working On)
 
  
- Future Project - Tic Tac Toe using Deep Q learning - CNN
+
  
  
  Future Project - Asphalt (Racing Game) - Using DQN with CNN 

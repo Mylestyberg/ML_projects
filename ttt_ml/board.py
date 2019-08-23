@@ -136,7 +136,9 @@ class ttt_board():
             count = count + 9
 
 
-        return reshape_board.reshape((3, 3, 3))
+        res =reshape_board.reshape((-1,3, 3, 3))
+
+        return  res
 
     def make_random_move(self,aboard):
 

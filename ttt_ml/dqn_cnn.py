@@ -11,6 +11,8 @@ from keras.models import load_model
 from keras.layers import Dropout, Conv2D, MaxPooling2D, Activation, Flatten
 
 
+winnerprev = 0
+loserprev = 0
 
 
 from ttt_ml.tensor_board import ModifiedTensorBoard
@@ -39,7 +41,7 @@ from keras.optimizers import Adam
 REPLAY_MEMORY_SIZE = 1000
 MIN_REPLAY_MEMORY_SIZE = 100
 MINIBATCH_SIZE = 10
-UPDATE_TARGET_EVERY = 7
+UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'TTT'
 
@@ -48,18 +50,14 @@ class DQNAgent:
     def create_model(self):
         model = Sequential()
 
-        model.add(Conv2D(128, (3, 3), input_shape=(3,3,3)))
-        model.add(Activation('relu'))
+        # add model layers
+        model.add(Conv2D(128, kernel_size=3, activation='relu', input_shape = (3, 3, 3),padding ='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.2))
+        model.add(Conv2D(64, kernel_size=2, activation='relu',padding='same'))
+        model.add(Flatten())
 
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(0.2))
 
-        model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-        model.add(Dense(64))
 
         model.add(Dense(9, activation='linear'))  # ACTION_SPACE_SIZE = how many choices (9)
         model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['accuracy'])
@@ -125,7 +123,7 @@ class DQNAgent:
             current_qs[action]   = new_q
 
             # And append to our training data
-            xx = ttt_board().reshape_for_nn(current_state)
+            xx = ttt_board().reshape_for_cnn(current_state)
             X.append(xx[0])
 
             y.append(current_qs)
@@ -170,11 +168,11 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         #dqn make move
             while not can_place_piece:
                 if np.random.random() > epsilon:
-                    action = np.argmax(agent.get_qs(ttt_board().reshape_for_nn(current_state)))
+                    action = np.argmax(agent.get_qs(ttt_board().reshape_for_cnn(current_state)))
                 else:
                     action = np.random.randint(0, 9)
                 if ttt_board().check_if_position(action, current_state): ##if postion is taken
-                     actions = agent.get_qs(ttt_board().reshape_for_nn(current_state))
+                     actions = agent.get_qs(ttt_board().reshape_for_cnn(current_state))
                      actions[0,action] = -1
                 elif not  ttt_board().check_if_position(action, current_state):
                     can_place_piece = True
@@ -230,6 +228,9 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         print("   ")
         print("   ")
         print(winner, loser, draw)
+        print(winner - winnerprev, loser - loserprev)
+        winnerprev = winner
+        loserprev = loser
 
 
 agent.model.save("C:\\Users\\myles.MSI\\Documents\\models\\models.h5")

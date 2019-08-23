@@ -13,6 +13,8 @@ from keras.models import load_model
 
 
 from ttt_ml.tensor_board import ModifiedTensorBoard
+winnerprev = 0
+loserprev = 0
 
 learning_rate = 0.9
 value_discount = 0.95
@@ -213,9 +215,13 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         epsilon = max(MIN_EPSILON, epsilon)
 
     if episode % 100==0:
+
         print("   ")
         print("   ")
         print(winner, loser, draw)
+        print(winner- winnerprev,loser -loserprev)
+        winnerprev = winner
+        loserprev = loser
 
 
 agent.model.save("C:\\Users\\myles.MSI\\Documents\\models\\models.h5")

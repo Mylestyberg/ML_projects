@@ -214,7 +214,7 @@ def detect_text(img):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-def pst():
+def screen_pt():
 
     last_time = time.time()
     while True:
@@ -233,6 +233,14 @@ def pst():
             content = image_file.read()
         percentage = vision.types.image_annotator_pb2.Image(content=content)
         detect_text(percentage)
+
+
+        screen = np.array(ImageGrab.grab(bbox=(0, 40, 800, 640)))
+        screen = cv2.resize(screen, (80, 60))
+        print('Frame took {} seconds'.format(time.time() - last_time))
+        last_time = time.time()
+
+        cv2.imshow('window', screen)
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()

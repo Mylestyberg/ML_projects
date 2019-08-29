@@ -14,6 +14,8 @@ from keras.layers import Dropout, Conv2D, MaxPooling2D, Activation, Flatten
 winnerprev = 0
 loserprev = 0
 
+print()
+
 
 from ttt_ml.tensor_board import ModifiedTensorBoard
 

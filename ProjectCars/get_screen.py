@@ -9,7 +9,20 @@ import mss.tools
 import carseour
 import math
 
+
+from google.cloud import vision
+
+
+# TODO(developer): Set key_path to the path to the service account key
+#                  file.
+key_path = "C:\\Users\\myles.MSI\\downloads\\cred.json"
+
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=key_path
+
+
 MAX_SPEED = 180
+check =0
 
 
 
@@ -39,6 +52,18 @@ def slow_ya_roll():
     ReleaseKey(D)
 
 
+def detect_text(img):
+    """Detects text in the file."""
+
+    client = vision.ImageAnnotatorClient()
+
+
+
+
+
+    response = client.text_detection(image=img)
+    texts = response.text_annotations
+    print('Texts:')
 
 def get_screem():
 
@@ -73,16 +98,30 @@ def  get_current_state():
 
         ##return current state
 
+
+
+
+        ImageGrab.grab(bbox=(100, 550, 180, 570)).save("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg")
+        with open("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg", 'rb') as image_file:
+            content = image_file.read()
+        endgame = vision.types.image_annotator_pb2.Image(content=content)
+        detect_text(endgame)
+
         screen = np.array(ImageGrab.grab(bbox=(0, 40, 800, 640)))
         screen_for_cnn = cv2.resize(screen, (80, 60))
 
         game = carseour.snapshot()
 
+        f = carseour.models.GameInstance
+
         # print current speed of vehicle
         print(game.mSpeed * 2.24)
-        print(game.mCrashState)
+        if game.mCrashState == 0:
+            crash = True
+        else:
+            crash = False
 
-        # print('Frame took {} seconds'.format(time.time() - last_time))
+        reward(log_speed(game.mSpeed*2.24),crash)
         last_time = time.time()
 
         cv2.imshow('window', screen)
@@ -91,6 +130,8 @@ def  get_current_state():
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
+        return
+
 
 def reset_env():
     PressKey(R)
@@ -105,7 +146,7 @@ def reward( log_speed, crashed):
         return log_speed
 
 
-def log_speed(self, speed):
+def log_speed(speed):
     x = (float(speed) / float((MAX_SPEED)) * 100.0) + 0.99
     base = 10
     return max(0.0, math.log(x, base) / 2.0)

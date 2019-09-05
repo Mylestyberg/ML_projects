@@ -21,3 +21,6 @@
  
  
  Future Project - Project Cars (Racing Game) - Using DQN with CNN 
+ 
+- mss
+- Use carsouer 

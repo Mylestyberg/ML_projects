@@ -1,9 +1,13 @@
 import random
-
+from collections import deque
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout, Flatten, Conv2D, MaxPooling2D
 import numpy as np
+from tqdm import tqdm
+
+from get_screen import get_current_state
+
 np.random.seed(1000)
 #Instantiate an empty model
 
@@ -42,7 +46,7 @@ class DQNAgent:
         model = Sequential()
 
         # 1st Convolutional Layer
-        model.add(Conv2D(filters=96, input_shape=(80,60,1), kernel_size=(11,11), strides=(4,4), padding='valid'))
+        model.add(Conv2D(filters=96, input_shape=(80,60,3), kernel_size=(11,11), strides=(4,4), padding='valid'))
         model.add(Activation('relu'))
         # Max Pooling
         model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid'))
@@ -107,7 +111,7 @@ class DQNAgent:
         self.target_model.set_weights(self.model.get_weights())
 
         # An array with last n steps for training
-        from collections import deque
+
         self.replay_memory = deque(maxlen=REPLAY_MEMORY_SIZE)
 
         self.target_update_counter = 0
@@ -126,12 +130,12 @@ class DQNAgent:
 
         current_qs_list = []
         future_qs_list =[]
-        current_states = np.array( [ttt_board().reshape_for_cnn( transition[0]) for transition in minibatch])
+        current_states = np.array(transition[0] for transition in minibatch)
         for c in current_states:
             current_qs_list.append(self.model.predict(c))
 
 
-        new_current_states = np.array([ttt_board().reshape_for_cnn( transition[3]) for transition in minibatch])
+        new_current_states = np.array(transition[3] for transition in minibatch)
 
         for n in new_current_states:
             future_qs_list.append(self.model.predict(n))
@@ -158,8 +162,8 @@ class DQNAgent:
             current_qs[action]   = new_q
 
             # And append to our training data
-            xx = ttt_board().reshape_for_cnn(current_state)
-            X.append(xx[0])
+
+            X.append(x[0])
 
             y.append(current_qs)
 
@@ -179,17 +183,22 @@ class DQNAgent:
      return self.model.predict(np.array(state))
 global action
 
+
+
+
+##running the program
+
 agent = DQNAgent()
 
 
 ##Each episode will be a game and when finised, then check when to train with that info
 
-aboard =  board.ttt_board.board
 global reward
+
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     episode_reward = 0
 
-    current_state = board.ttt_board().reset(aboard)
+
     done = False
     history = deque(maxlen=REPLAY_MEMORY_SIZE)
     index = 0
@@ -197,26 +206,22 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     while not done :
         can_place_piece = False
 
-        done,reward, cboard= board.ttt_board().make_random_move(current_state)
+        done,reward, current_state = get_current_state()
 
         if not done:
         #dqn make move
             while not can_place_piece:
                 if np.random.random() > epsilon:
-                    action = np.argmax(agent.get_qs(ttt_board().reshape_for_cnn(current_state)))
+                    action = np.argmax(agent.get_qs((current_state)))
+                    new_state, done, reward = make_move(action)
                 else:
                     action = np.random.randint(0, 9)
-                if ttt_board().check_if_position(action, current_state): ##if postion is taken
-                     actions = agent.get_qs(ttt_board().reshape_for_cnn(current_state))
-                     actions[0,action] = -1
-                elif not  ttt_board().check_if_position(action, current_state):
-                    can_place_piece = True
-                    new_state, done, reward = board.ttt_board().make_move(action,current_state)
 
 
 
 
 
+        ##need to write to file for percentage to see when getting better
 
         history.append((current_state, action, reward, new_state, done))
         index+=1
@@ -226,29 +231,20 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
         if done:
 
-            if reward == -1 or reward==0.5:
-               remove= history.pop()
-               append = history.pop()
-               append = list(append)
-               append[2] = reward
-               append[4] = True
-               history.append(tuple(append))
-
-
-            if reward == 1:
-                winner = winner + 1
-            elif reward == -1 :
-                loser = loser + 1
-            else:
-                draw = draw + 1
 
 
 
+## if it doesnt get a percentage for more then 20 seconds starts getting negative rewards
+##needs env.reset
 
 
 
             agent.update_replay_memory(history)
             agent.train(done)
+
+#HERE
+          #  if done[1] = "break_it":
+                ##reset env and carry on with episodes
 
 
 
@@ -259,13 +255,8 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
-    if episode % 100==0:
-        print("   ")
-        print("   ")
-        print(winner, loser, draw)
-        print(winner - winnerprev, loser - loserprev)
-        winnerprev = winner
-        loserprev = loser
+  #  if episode % 100==0:
+
 
 
 agent.model.save("C:\\Users\\myles.MSI\\Documents\\models\\models.h5")

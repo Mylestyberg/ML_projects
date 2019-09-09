@@ -5,7 +5,7 @@ To do:
 
 Resources/Help 
 Big thanks to all these resources for helping me build the project so far:
-- Heavily relied on the medium series to build my first project and learn the core concepts of ML https://medium.com/@carsten.friedrich/teaching-a-computer-to-play-tic-tac-toe-88feb838b5e3
+- Heavily relied on this medium series to build my first project and learn the core concepts of ML https://medium.com/@carsten.friedrich/teaching-a-computer-to-play-tic-tac-toe-88feb838b5e3
 - Use carsouer API to get info from game - Thank you https://github.com/matslindh/carseour
 - https://lopespm.github.io/machine_learning/2016/10/06/deep-reinforcement-learning-racing-game.html - This helped me find a reward function for the car.
 - Sentdex, https://pythonprogramming.net, the tutorials have helped me learn the techniques needed for ML, especially the GTA V self driving car and reinforcement learning series.

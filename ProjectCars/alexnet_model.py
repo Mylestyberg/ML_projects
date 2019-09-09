@@ -1,16 +1,12 @@
 import random
 from collections import deque
-from keras.optimizers import Adam
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.layers import  Activation, Dropout, Flatten, Conv2D, MaxPooling2D
 import numpy as np
 from tqdm import tqdm
 
-from get_screen import get_current_state
+from get_screen import  make_move, start_screen
 
 np.random.seed(1000)
-#Instantiate an empty model
-
 
 learning_rate = 0.9
 value_discount = 0.95
@@ -18,9 +14,6 @@ EPISODES = 20_000
 epsilon = 1  # not a constant, going to be decayed
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
-winner =0
-loser =0
-draw = 0
 
 
 #  Stats settings
@@ -179,6 +172,7 @@ class DQNAgent:
                 self.target_model.set_weights(self.model.get_weights())
                 self.target_update_counter = 0
 
+
     def get_qs(self, state):
      return self.model.predict(np.array(state))
 global action
@@ -191,8 +185,6 @@ global action
 agent = DQNAgent()
 
 
-##Each episode will be a game and when finised, then check when to train with that info
-
 global reward
 
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
@@ -202,49 +194,30 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     done = False
     history = deque(maxlen=REPLAY_MEMORY_SIZE)
     index = 0
+    current_state = start_screen()
+
 
     while not done :
-        can_place_piece = False
 
-        done,reward, current_state = get_current_state()
+        if np.random.random() > epsilon:
+            action = np.argmax(agent.get_qs((current_state)))
+        else:
+            action = np.random.randint(0, 3)
 
-        if not done:
-        #dqn make move
-            while not can_place_piece:
-                if np.random.random() > epsilon:
-                    action = np.argmax(agent.get_qs((current_state)))
-                    new_state, done, reward = make_move(action)
-                else:
-                    action = np.random.randint(0, 9)
+        new_state, reward = make_move(action)
 
-
-
-
-
-        ##need to write to file for percentage to see when getting better
 
         history.append((current_state, action, reward, new_state, done))
-        index+=1
         episode_reward += reward
-        current_state = new_state.copy()
+        current_state = new_state
 
+
+        if episode % 500 == 0:
+            done = True
 
         if done:
-
-
-
-
-## if it doesnt get a percentage for more then 20 seconds starts getting negative rewards
-##needs env.reset
-
-
-
             agent.update_replay_memory(history)
             agent.train(done)
-
-#HERE
-          #  if done[1] = "break_it":
-                ##reset env and carry on with episodes
 
 
 
@@ -255,7 +228,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
-  #  if episode % 100==0:
+
 
 
 

@@ -9,8 +9,7 @@ import mss.tools
 import carseour
 import math
 
-
-from google.cloud import vision
+actions = {0: W, 1: A, 2: D}
 
 
 
@@ -84,22 +83,10 @@ def get_screem():
  global check
  check =0
 def  get_current_state():
-
-    while True:
-
-        #reward = get_reward()
-
-
-        ##return current state
-        if check ==30:
-            print(3)
-
-
         screen = np.array(ImageGrab.grab(bbox=(0, 40, 800, 640)))
-        screen_for_cnn = cv2.resize(screen, (80, 60))
+        screen_for_cnn_state = cv2.resize(screen, (80, 60))
 
         game = carseour.snapshot()
-        f = carseour.models.GameInstance
 
         # print current speed of vehicle
         print(game.mSpeed * 2.24)
@@ -108,16 +95,9 @@ def  get_current_state():
         else:
             crash = False
 
-        reward(log_speed(game.mSpeed*2.24),crash)
-        last_time = time.time()
+        reward_ = reward(log_speed(game.mSpeed*2.24),crash)
 
-        cv2.imshow('window', screen)
-
-
-
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            cv2.destroyAllWindows()
-        return
+        return screen_for_cnn_state, reward_
 
 
 def reset_env():
@@ -141,11 +121,14 @@ def log_speed(speed):
 
 
 def make_move(action,):
-    key_dict = {}
-    get_key =  key_dict[""]
-    PressKey(get_key)
-    new_state, done, reward = get_current_state()
-    return  new_state, done, reward
+    get_move = actions[action]
+    PressKey(get_move)
+    new_state,  reward = get_current_state()
+    return  new_state, reward
+
+
+def start_screen(): ## need this done
+    print()
 
 
 

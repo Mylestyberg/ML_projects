@@ -13,12 +13,9 @@ import math
 from google.cloud import vision
 
 
-# TODO(developer): Set key_path to the path to the service account key
-#                  file.
-key_path = "C:\\Users\\myles.MSI\\downloads\\cred.json"
 
 import os
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=key_path
+
 
 
 MAX_SPEED = 180
@@ -97,13 +94,6 @@ def  get_current_state():
         if check ==30:
             print(3)
 
-
-
-        ImageGrab.grab(bbox=(240, 120, 460, 155)).save("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg")
-        with open("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg", 'rb') as image_file:
-            content = image_file.read()
-        endgame = vision.types.image_annotator_pb2.Image(content=content)
-        detect_text(endgame)
 
         screen = np.array(ImageGrab.grab(bbox=(0, 40, 800, 640)))
         screen_for_cnn = cv2.resize(screen, (80, 60))

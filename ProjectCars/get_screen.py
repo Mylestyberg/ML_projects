@@ -54,16 +54,10 @@ def slow_ya_roll():
 
 def detect_text(img):
     """Detects text in the file."""
-
     client = vision.ImageAnnotatorClient()
-
-
-
-
-
     response = client.text_detection(image=img)
     texts = response.text_annotations
-    print('Texts:')
+    return texts
 
 def get_screem():
 
@@ -87,8 +81,11 @@ def get_screem():
              # Press "q" to quit
              if cv2.waitKey(25) & 0xFF == ord("q"):
                  cv2.destroyAllWindows()
+
                  break
 
+ global check
+ check =0
 def  get_current_state():
 
     while True:
@@ -97,11 +94,12 @@ def  get_current_state():
 
 
         ##return current state
+        if check ==30:
+            print(3)
 
 
 
-
-        ImageGrab.grab(bbox=(100, 550, 180, 570)).save("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg")
+        ImageGrab.grab(bbox=(240, 120, 460, 155)).save("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg")
         with open("C:\\Users\\myles.MSI\\Pictures\\endgame.jpg", 'rb') as image_file:
             content = image_file.read()
         endgame = vision.types.image_annotator_pb2.Image(content=content)
@@ -111,7 +109,6 @@ def  get_current_state():
         screen_for_cnn = cv2.resize(screen, (80, 60))
 
         game = carseour.snapshot()
-
         f = carseour.models.GameInstance
 
         # print current speed of vehicle

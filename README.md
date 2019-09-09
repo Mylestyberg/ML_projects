@@ -22,5 +22,5 @@
  
  Future Project - Project Cars (Racing Game) - Using DQN with CNN 
  
-- mss
-- Use carsouer 
+- mss to increase fps
+- Use carsouer API to get info from game - Thank you https://github.com/matslindh/carseour

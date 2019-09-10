@@ -20,7 +20,7 @@ np.random.seed(1000)
 
 learning_rate = 0.9
 value_discount = 0.95
-EPISODES = 10000
+EPISODES = 7000
 epsilon = 1  # not a constant, going to be decayed
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
@@ -38,7 +38,7 @@ from keras.optimizers import Adam
 
 REPLAY_MEMORY_SIZE = 3000
 MIN_REPLAY_MEMORY_SIZE = 500
-MINIBATCH_SIZE = 50
+MINIBATCH_SIZE = 200
 UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'projectcars'
@@ -95,7 +95,7 @@ class DQNAgent:
         model.add(Dropout(0.4))
 
         # Output Layer
-        model.add(Dense(3))
+        model.add(Dense(4))
         model.add(Activation('softmax'))
 
         model.summary()
@@ -212,7 +212,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         if np.random.random() > epsilon:
             action = np.argmax(agent.get_qs((current_state)))
         else:
-            action = np.random.randint(0, 3)
+            action = np.random.randint(0, 4)
 
         new_state, reward = make_move(action)
 

@@ -3,13 +3,44 @@ import numpy as np
 from PIL import ImageGrab
 import cv2
 import time
-from directkeys import PressKey, W, A, D,R ,ReleaseKey
+from directkeys import PressKey, W, A, D,R,S ,ReleaseKey
 import mss
 import mss.tools
 import carseour
 import math
 
-actions = {0: W, 1: A, 2: D}
+
+from stopwatch import Stopwatch
+
+stopwatch = Stopwatch()
+
+
+def straight():
+    PressKey(W)
+    ReleaseKey(A)
+    ReleaseKey(D)
+
+def left():
+    PressKey(A)
+    ReleaseKey(W)
+    ReleaseKey(D)
+    ReleaseKey(A)
+
+def right():
+    PressKey(D)
+    ReleaseKey(A)
+    ReleaseKey(W)
+    ReleaseKey(D)
+
+def slow_ya_roll():
+    ReleaseKey(W)
+    ReleaseKey(A)
+    ReleaseKey(D)
+
+
+actions = {0: straight, 1: right, 2: left,3:slow_ya_roll}
+
+
 
 
 
@@ -91,12 +122,16 @@ def  get_current_state():
 
         penalty = 0
 
-        if game.mSpeed < 10 and crash:
-           reset_env()
+        if game.mSpeed < 1:
+           stopwatch.start()
+           if stopwatch.duration > 15:
+             reset_env()
+
+        stopwatch.reset()
 
 
 
-        reward_ = reward(log_speed(game.mSpeed*2.24),crash)
+        reward_ = reward(log_speed(game.mSpeed*2.24),crash,game.mSpeed*2.24)
 
         return screen_for_cnn_state, reward_
 
@@ -107,11 +142,11 @@ def reset_env():
     ReleaseKey(R)
 
 
-def reward( log_speed, crashed):
-    if  crashed:
-        return -0.8
-    elif log_speed < 10:
-        return -0.04
+def reward( log_speed, crashed,speed):
+    if  crashed  :
+        return -0.6
+    elif speed < 6:
+         return -0.04
     else:
         return log_speed
 
@@ -125,7 +160,7 @@ def log_speed(speed):
 
 def make_move(action,):
     get_move = actions[action]
-    PressKey(get_move)
+    get_move()
     new_state,  reward = get_current_state()
     return  new_state, reward
 

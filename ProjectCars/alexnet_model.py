@@ -4,6 +4,7 @@ from keras.layers import  Activation, Dropout, Flatten, Conv2D, MaxPooling2D
 import numpy as np
 from tqdm import tqdm
 
+previous_reward = 0
 from get_screen import  make_move, start_screen
 
 
@@ -48,30 +49,30 @@ class DQNAgent:
         model = Sequential()
 
         # 1st Convolutional Layer
-        model.add(Conv2D(filters=96, input_shape=(80,60,3), kernel_size=(11,11), strides=(4,4), padding='valid'))
+        model.add(Conv2D(filters=96, input_shape=(60,80,3), kernel_size=(11,11), strides=(4,4), padding='same'))
         model.add(Activation('relu'))
         # Max Pooling
-        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid'))
+        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='same'))
 
         # 2nd Convolutional Layer
-        model.add(Conv2D(filters=256, kernel_size=(11,11), strides=(1,1), padding='valid'))
+        model.add(Conv2D(filters=256, kernel_size=(11,11), strides=(1,1), padding='same'))
         model.add(Activation('relu'))
         # Max Pooling
-        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid'))
+        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='same'))
 
         # 3rd Convolutional Layer
-        model.add(Conv2D(filters=384, kernel_size=(3,3), strides=(1,1), padding='valid'))
+        model.add(Conv2D(filters=384, kernel_size=(3,3), strides=(1,1), padding='same'))
         model.add(Activation('relu'))
 
         # 4th Convolutional Layer
-        model.add(Conv2D(filters=384, kernel_size=(3,3), strides=(1,1), padding='valid'))
+        model.add(Conv2D(filters=384, kernel_size=(3,3), strides=(1,1), padding='same'))
         model.add(Activation('relu'))
 
         # 5th Convolutional Layer
-        model.add(Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='valid'))
+        model.add(Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='same'))
         model.add(Activation('relu'))
         # Max Pooling
-        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid'))
+        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='same'))
 
         # Passing it to a Fully Connected layer
         model.add(Flatten())
@@ -102,6 +103,8 @@ class DQNAgent:
         # Compile the model
         model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['accuracy'])
 
+        return model
+
 
     def __init__(self):
 
@@ -110,6 +113,7 @@ class DQNAgent:
 
         # Target network
         self.target_model = self.create_model()
+
         self.target_model.set_weights(self.model.get_weights())
 
         # An array with last n steps for training
@@ -127,27 +131,20 @@ class DQNAgent:
         if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
             return
 
-
+        # Get a minibatch of random samples from memory replay table
         minibatch = random.sample(self.replay_memory, MINIBATCH_SIZE)
 
-        current_qs_list = []
-        future_qs_list =[]
-        current_states = np.array(transition[0] for transition in minibatch)
-        for c in current_states:
-            current_qs_list.append(self.model.predict(c))
+        # Get current states from minibatch, then query NN model for Q values
+        current_states = np.array([transition[0] for transition in minibatch])
+        current_qs_list = self.model.predict(current_states)
 
-
-        new_current_states = np.array(transition[3] for transition in minibatch)
-
-        for n in new_current_states:
-            future_qs_list.append(self.model.predict(n))
-
-
-
+        # Get future states from minibatch, then query NN model for Q values
+        # When using target network, query it, otherwise main network should be queried
+        new_current_states = np.array([transition[3] for transition in minibatch])
+        future_qs_list = self.target_model.predict(new_current_states)
 
         X = []
         y = []
-
 
         for index, (current_state, action, reward, new_current_state, done) in enumerate(minibatch):
 
@@ -158,14 +155,16 @@ class DQNAgent:
             else:
                 new_q = reward
 
-            # Update Q value for given state
             current_qs = current_qs_list[index]
-            current_qs = current_qs[0]
-            current_qs[action]   = new_q
+            current_qs[action] = new_q
+
+            # And append to our training data
+            X.append(current_state)
+            y.append(current_qs)
 
             # And append to our training data
 
-            X.append(x[0])
+            X.append(current_state)
 
             y.append(current_qs)
 
@@ -192,7 +191,7 @@ global action
 ##running the program
 
 agent = DQNAgent()
-
+count =0
 
 global reward
 
@@ -200,10 +199,12 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     episode_reward = 0
 
 
+
     done = False
     history = deque(maxlen=REPLAY_MEMORY_SIZE)
     index = 0
     current_state = start_screen()
+
 
 
     while not done :
@@ -220,8 +221,9 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         episode_reward += reward
         current_state = new_state
 
-
-        if episode % 500 == 0:
+        count = count + 1
+        if count % 200 == 0:
+            print(count)
             done = True
 
         if done:
@@ -237,11 +239,17 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         epsilon *= EPSILON_DECAY
         epsilon = max(MIN_EPSILON, epsilon)
 
+    if episode_reward > previous_reward:
+        agent.model.save("C:\\Users\\myles.MSI\\Documents\\models\\models.h5")
+
+    print(episode_reward)
+
+    previous_reward = episode_reward
 
 
 
 
-agent.model.save("C:\\Users\\myles.MSI\\Documents\\models\\models.h5")
+
 
 
 

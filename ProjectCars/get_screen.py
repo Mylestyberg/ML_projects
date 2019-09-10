@@ -89,7 +89,7 @@ def  get_current_state():
         game = carseour.snapshot()
 
         # print current speed of vehicle
-        print(game.mSpeed * 2.24)
+
         if game.mCrashState == 0:
             crash = True
         else:
@@ -128,7 +128,9 @@ def make_move(action,):
 
 
 def start_screen(): ## need this done
-    print()
+    screen = np.array(ImageGrab.grab(bbox=(0, 40, 800, 640)))
+    screen_for_cnn_state = cv2.resize(screen, (80, 60))
+    return screen_for_cnn_state
 
 
 

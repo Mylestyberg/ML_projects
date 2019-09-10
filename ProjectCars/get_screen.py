@@ -48,12 +48,6 @@ def slow_ya_roll():
     ReleaseKey(D)
 
 
-def detect_text(img):
-    """Detects text in the file."""
-    client = vision.ImageAnnotatorClient()
-    response = client.text_detection(image=img)
-    texts = response.text_annotations
-    return texts
 
 def get_screem():
 
@@ -90,10 +84,17 @@ def  get_current_state():
 
         # print current speed of vehicle
 
-        if game.mCrashState == 0:
+        if game.mCrashState == 1:
             crash = True
         else:
             crash = False
+
+        penalty = 0
+
+        if game.mSpeed < 10 and crash:
+           reset_env()
+
+
 
         reward_ = reward(log_speed(game.mSpeed*2.24),crash)
 
@@ -102,12 +103,14 @@ def  get_current_state():
 
 def reset_env():
     PressKey(R)
+    time.sleep(0.5)
+    ReleaseKey(R)
 
 
 def reward( log_speed, crashed):
     if  crashed:
-        return -0.6
-    elif log_speed < 1:
+        return -0.8
+    elif log_speed < 10:
         return -0.04
     else:
         return log_speed

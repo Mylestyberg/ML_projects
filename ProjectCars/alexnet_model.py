@@ -20,7 +20,7 @@ np.random.seed(1000)
 
 learning_rate = 0.9
 value_discount = 0.95
-EPISODES = 20_000
+EPISODES = 10000
 epsilon = 1  # not a constant, going to be decayed
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
@@ -36,9 +36,9 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 
 
-REPLAY_MEMORY_SIZE = 1000
-MIN_REPLAY_MEMORY_SIZE = 100
-MINIBATCH_SIZE = 10
+REPLAY_MEMORY_SIZE = 3000
+MIN_REPLAY_MEMORY_SIZE = 500
+MINIBATCH_SIZE = 50
 UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'projectcars'
@@ -182,7 +182,7 @@ class DQNAgent:
 
 
     def get_qs(self, state):
-     return self.model.predict(np.array(state))
+     return self.model.predict(np.array(state).reshape(-1,*state.shape))[0]
 global action
 
 

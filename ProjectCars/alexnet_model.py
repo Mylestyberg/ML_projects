@@ -6,6 +6,15 @@ from tqdm import tqdm
 
 from get_screen import  make_move, start_screen
 
+
+"""""""""
+TO DO:
+- Add tensorboard for reward tracking 
+- Start Environment method
+- save model only when reward is at peak 
+
+"""""""""
+
 np.random.seed(1000)
 
 learning_rate = 0.9

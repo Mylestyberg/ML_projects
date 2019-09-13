@@ -2,6 +2,10 @@
  Project Cars (Racing Game) - Using DQN with CNN 
 To do:
 - mss to increase fps
+- DQN is not the correct approach, after training a few times, I am going to try policy based techniques instead of value based technique
+- DDPG/A2C
+
+
 
 Resources/Help 
 Big thanks to all these resources for helping me build the project so far:

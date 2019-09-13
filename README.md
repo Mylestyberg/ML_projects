@@ -3,7 +3,7 @@
 To do:
 - mss to increase fps
 - DQN is not the correct approach, after training a few times, I am going to try policy based techniques instead of value based technique
-- DDPG/A2C
+- Try using DDPG/A2C
 
 
 

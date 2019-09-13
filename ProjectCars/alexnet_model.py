@@ -19,8 +19,8 @@ TO DO:
 np.random.seed(1000)
 
 learning_rate = 0.9
-value_discount = 0.95
-EPISODES = 7000
+value_discount = 0.99
+EPISODES = 1000
 epsilon = 1  # not a constant, going to be decayed
 EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
@@ -36,9 +36,9 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 
 
-REPLAY_MEMORY_SIZE = 3000
-MIN_REPLAY_MEMORY_SIZE = 500
-MINIBATCH_SIZE = 200
+REPLAY_MEMORY_SIZE = 100000
+MIN_REPLAY_MEMORY_SIZE = 10000
+MINIBATCH_SIZE = 15000
 UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'projectcars'
@@ -222,7 +222,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         current_state = new_state
 
         count = count + 1
-        if count % 200 == 0:
+        if count % 1000 == 0:
             print(count)
             done = True
 

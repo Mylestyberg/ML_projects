@@ -15,6 +15,8 @@ from stopwatch import Stopwatch
 stopwatch = Stopwatch()
 
 
+
+
 def straight():
     PressKey(W)
     ReleaseKey(A)
@@ -122,12 +124,13 @@ def  get_current_state():
 
         penalty = 0
 
-        if game.mSpeed < 1:
+        if game.mSpeed < 1.3:
            stopwatch.start()
-           if stopwatch.duration > 15:
+           if stopwatch.duration > 25:
              reset_env()
+             stopwatch.reset()
 
-        stopwatch.reset()
+
 
 
 
@@ -143,12 +146,15 @@ def reset_env():
 
 
 def reward( log_speed, crashed,speed):
+
+
     if  crashed  :
-        return -0.6
+        return -0.7
     elif speed < 6:
          return -0.04
     else:
         return log_speed
+
 
 
 def log_speed(speed):

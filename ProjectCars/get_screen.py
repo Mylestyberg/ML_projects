@@ -50,7 +50,7 @@ import os
 
 
 
-MAX_SPEED = 180
+MAX_SPEED = 220
 check =0
 
 
@@ -124,11 +124,12 @@ def  get_current_state():
 
         penalty = 0
 
-        if game.mSpeed < 1.3:
+        if game.mSpeed < 1.4:
            stopwatch.start()
-           if stopwatch.duration > 25:
+           if stopwatch.duration > 30:
              reset_env()
              stopwatch.reset()
+
 
 
 
@@ -149,8 +150,8 @@ def reward( log_speed, crashed,speed):
 
 
     if  crashed  :
-        return -0.7
-    elif speed < 6:
+        return -0.8
+    elif speed < 4:
          return -0.04
     else:
         return log_speed

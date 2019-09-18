@@ -126,7 +126,7 @@ def  get_current_state():
 
         if game.mSpeed < 1.4:
            stopwatch.start()
-           if stopwatch.duration > 30:
+           if stopwatch.duration > 20:
              reset_env()
              stopwatch.reset()
 

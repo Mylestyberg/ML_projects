@@ -1,6 +1,6 @@
 
 from collections import deque
-from keras.layers import  Activation, Dropout,  Conv2D, MaxPooling2D
+from keras.layers import Activation, Dropout, Conv2D, MaxPooling2D, np
 
 from keras.layers import  Flatten
 from keras.models import Sequential
@@ -99,5 +99,10 @@ class create_actor_network():
             for i in range(len(actor_weights)):
                 actor_target_weights[i] = self.TAU * actor_weights[i] + (1 - self.TAU) * actor_target_weights[i]
                 self.target_model.set_weights(actor_target_weights)
+
+    def get_actor_policy(self, state):
+        return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
+
+
 
 

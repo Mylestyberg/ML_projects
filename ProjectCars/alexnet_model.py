@@ -192,7 +192,6 @@ global action
 
 agent = DQNAgent()
 count =0
-history = deque(maxlen=REPLAY_MEMORY_SIZE)
 
 global reward
 
@@ -202,6 +201,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
 
     done = False
+    history = deque(maxlen=REPLAY_MEMORY_SIZE)
     index = 0
     current_state = start_screen()
 

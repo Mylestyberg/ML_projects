@@ -10,6 +10,9 @@ import carseour
 import math
 
 
+
+
+
 from stopwatch import Stopwatch
 
 stopwatch = Stopwatch()
@@ -107,11 +110,13 @@ def get_screem():
 
                  break
 
- global check
- check =0
+
+
 def  get_current_state():
         screen = np.array(ImageGrab.grab(bbox=(0, 40, 800, 640)))
         screen_for_cnn_state = cv2.resize(screen, (80, 60))
+
+
 
         game = carseour.snapshot()
 
@@ -136,6 +141,12 @@ def  get_current_state():
 
 
         reward_ = reward(log_speed(game.mSpeed*2.24),crash,game.mSpeed*2.24)
+
+        current_lap_time = game.mBestLapTime
+
+
+
+
 
         return screen_for_cnn_state, reward_
 

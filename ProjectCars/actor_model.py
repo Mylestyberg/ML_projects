@@ -15,7 +15,10 @@ UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'actor'
 
+
+
 class create_actor_network():
+    tau = 0.001
     def create_actor_model(self):
         model = Sequential()
 
@@ -93,12 +96,13 @@ class create_actor_network():
 
         self.target_update_counter = 0
 
-    def target_train(self):
-            actor_weights = self.model.get_weights()
-            actor_target_weights = self.target_model.get_weights()
-            for i in range(len(actor_weights)):
-                actor_target_weights[i] = self.TAU * actor_weights[i] + (1 - self.TAU) * actor_target_weights[i]
-                self.target_model.set_weights(actor_target_weights)
+    def transfer_weights(self):
+        """ Transfer model weights to target model with a factor of Tau
+        """
+        W, target_W = self.model.get_weights(), self.target_model.get_weights()
+        for i in range(len(W)):
+            target_W[i] = self.tau * W[i] + (1 - self.tau) * target_W[i]
+        self.target_model.set_weights(target_W)
 
     def get_actor_policy(self, state):
         return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]

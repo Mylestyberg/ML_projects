@@ -1,5 +1,7 @@
 import random
 from collections import deque
+
+import carseour
 from keras.layers import  Activation, Dropout, Flatten, Conv2D, MaxPooling2D
 import numpy as np
 from tqdm import tqdm
@@ -38,7 +40,7 @@ from keras.optimizers import Adam
 
 REPLAY_MEMORY_SIZE = 128000
 MIN_REPLAY_MEMORY_SIZE = 1000
-MINIBATCH_SIZE = 250
+MINIBATCH_SIZE = 512
 UPDATE_TARGET_EVERY = 5
 import time
 MODEL_NAME = 'projectcars'
@@ -193,7 +195,14 @@ global action
 agent = DQNAgent()
 count =0
 
+game = carseour.live()
+
+prev_sector_time = [-1,-1,-1]
+
+
 global reward
+
+sector_count = 0
 
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     episode_reward = 0
@@ -205,6 +214,12 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     index = 0
     current_state = start_screen()
 
+    if sector_count < 2:
+        sector_count = sector_count + 1
+    else:
+        sector_count = 0
+
+
 
 
     while not done :
@@ -215,16 +230,21 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
             action = np.random.randint(0, 4)
 
         new_state, reward = make_move(action)
+        current_sector_time = [game.mCurrentSector1Time, game.mCurrentSector2Time, game.mCurrentSector3Time]
+
+        if  current_sector_time[sector_count] != prev_sector_time[sector_count] :
+            done = True
+            reward = 1
+            prev_sector_time[sector_count-1] = current_sector_time[sector_count-1]
+            print(sector_count)
+
 
 
         history.append((current_state, action, reward, new_state, done))
         episode_reward += reward
         current_state = new_state
 
-        count = count + 1
-        if count % 100 == 0:
-            print(count)
-            done = True
+
 
         if done:
             agent.update_replay_memory(history)

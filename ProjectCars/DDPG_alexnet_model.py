@@ -1,5 +1,6 @@
 from datetime import time
 
+import carseour
 from keras.models import Sequential
 from keras.layers import Dense, Lambda
 from keras.optimizers import Adam
@@ -35,9 +36,6 @@ critic = create_critic_network()
 history = deque(maxlen=REPLAY_MEMORY_SIZE)
 
 
-
-
-
 class OrnsteinUhlenbeckProcess(object):
     """ Ornstein-Uhlenbeck Noise (original code by @slowbull)
     """
@@ -59,7 +57,14 @@ class OrnsteinUhlenbeckProcess(object):
 
 
 
-    def train(self, terminal_state):
+
+
+
+
+
+
+
+def update(self, terminal_state):
         # Start training only if certain number of samples is already saved
         if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
             return
@@ -67,9 +72,12 @@ class OrnsteinUhlenbeckProcess(object):
         # Get a minibatch of random samples from memory replay table
         minibatch = random.sample(self.replay_memory, MINIBATCH_SIZE)
 
+
+
         # Get current states from minibatch, then query NN model for Q values
         current_states = np.array([transition[0] for transition in minibatch])
-        current_qs_list = self.model.predict(current_states)
+        current_qs_list = self.critic.predict(current_states)
+
 
         # Get future states from minibatch, then query NN model for Q values
         # When using target network, query it, otherwise main network should be queried
@@ -101,9 +109,20 @@ class OrnsteinUhlenbeckProcess(object):
 
             y.append(current_qs)
 
-            # Fit on all samples as one batch, log only on terminal state
-        self.model.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0, shuffle=False)
 
+        self.critic.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0, shuffle=False)
+
+
+        actions = self.actor.model.predict(minibatch[0])
+        grads = self.critic.gradients(minibatch[0], actions)
+
+        self.actor.train(minibatch[0], actions, np.array(grads).reshape((-1, self.act_dim)))
+        # Transfer weights to target networks at rate Tau
+        self.actor.transfer_weights()
+        self.critic.transfer_weights()
+
+
+"""""""""
           # Update target network counter every episode
         if terminal_state:
                 self.target_update_counter += 1
@@ -113,11 +132,18 @@ class OrnsteinUhlenbeckProcess(object):
                 self.target_model.set_weights(self.model.get_weights())
                 self.target_update_counter = 0
 
+"""""""""
 
 
 
+game = carseour.live()
+
+prev_sector_time = [-1,-1,-1]
 
 
+global reward
+
+sector_count = 0
 
 
 
@@ -127,16 +153,26 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     current_state = start_screen()
     noise = OrnsteinUhlenbeckProcess(size=4)
 
+
+    if sector_count < 2:
+        sector_count = sector_count + 1
+    else:
+        sector_count = 0
+
     while not done:
         action = np.argmax(actor.get_actor_policy((current_state)))
         # Clip continuous values to be valid w.r.t. environment
         action = np.clip(action + noise.generate(time), - 4, 4)
         new_state, reward = make_move(action)
+        current_sector_time = [game.mCurrentSector1Time, game.mCurrentSector2Time, game.mCurrentSector3Time]
+
+        if current_sector_time[sector_count] != prev_sector_time[sector_count]:
+            done = True
+            reward = 1
+            prev_sector_time[sector_count - 1] = current_sector_time[sector_count - 1]
+            print(sector_count)
+
         history.append((current_state, action, reward, new_state, done))
-
-
-
-
 
 
         if done:

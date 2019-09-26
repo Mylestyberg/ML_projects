@@ -9,4 +9,7 @@ while True:
     print(game.mSteering)
     print(game.mBrake)
     print(game.mThrottle)
+    print(game.mCurrentSector1Time)
+    print(game.mCurrentSector2Time)
+    print(game.mCurrentSector3Time)
     time.sleep(0.5)

@@ -22,6 +22,7 @@ stopwatch = Stopwatch()
 
 def straight():
     PressKey(W)
+    time.sleep(0.2)
     ReleaseKey(A)
     ReleaseKey(D)
 

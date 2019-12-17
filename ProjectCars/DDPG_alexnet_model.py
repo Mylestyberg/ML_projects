@@ -11,14 +11,18 @@ import numpy as np
 from tqdm import tqdm
 from keras.layers import Dense, Flatten, Input, merge, Lambda
 
+from OUNoise import OUNoise
 from actor_model import create_actor_network
 from critic_model import create_critic_network
 from get_screen import start_screen, make_move
+from utils.memory_buffer import MemoryBuffer
 
 REPLAY_MEMORY_SIZE = 128000
 MIN_REPLAY_MEMORY_SIZE = 1000
 MINIBATCH_SIZE = 250
 UPDATE_TARGET_EVERY = 5
+
+buffer = MemoryBuffer(128000)
 
 
 np.random.seed(1000)
@@ -31,109 +35,39 @@ EPSILON_DECAY = 0.99975
 MIN_EPSILON = 0.001
 
 
-actor = create_actor_network()
-critic = create_critic_network()
+actor = create_actor_network(4,4,0.001)
+
+critic = create_critic_network(4,0.001,0.001)
 history = deque(maxlen=REPLAY_MEMORY_SIZE)
 
 
-class OrnsteinUhlenbeckProcess(object):
-    """ Ornstein-Uhlenbeck Noise (original code by @slowbull)
-    """
-    def __init__(self, theta=0.15, mu=0, sigma=1, x0=0, dt=1e-2, n_steps_annealing=100, size=1):
-        self.theta = theta
-        self.sigma = sigma
-        self.n_steps_annealing = n_steps_annealing
-        self.sigma_step = - self.sigma / float(self.n_steps_annealing)
-        self.x0 = x0
-        self.mu = mu
-        self.dt = dt
-        self.size = size
-
-    def generate(self, step):
-        sigma = max(0, self.sigma_step * step + self.sigma)
-        x = self.x0 + self.theta * (self.mu - self.x0) * self.dt + sigma * np.sqrt(self.dt) * np.random.normal(size=self.size)
-        self.x0 = x
-        return x
 
 
 
-
-
-
-
-
-
-
-def update(self, terminal_state):
-        # Start training only if certain number of samples is already saved
-        if len(self.replay_memory) < MIN_REPLAY_MEMORY_SIZE:
-            return
-
-        # Get a minibatch of random samples from memory replay table
-        minibatch = random.sample(self.replay_memory, MINIBATCH_SIZE)
-
-
-
-        # Get current states from minibatch, then query NN model for Q values
-        current_states = np.array([transition[0] for transition in minibatch])
-        current_qs_list = self.critic.predict(current_states)
-
-
-        # Get future states from minibatch, then query NN model for Q values
-        # When using target network, query it, otherwise main network should be queried
-        new_current_states = np.array([transition[3] for transition in minibatch])
-        future_qs_list = self.target_model.predict(new_current_states)
-
-        X = []
-        y = []
-
-        for index, (current_state, action, reward, new_current_state, done) in enumerate(minibatch):
-
-
-            if not done:
-                max_future_q = np.max(future_qs_list[index])
-                new_q = reward + value_discount * max_future_q
-            else:
-                new_q = reward
-
-            current_qs = current_qs_list[index]
-            current_qs[action] = new_q
-
-            # And append to our training data
-            X.append(current_state)
-            y.append(current_qs)
-
-            # And append to our training data
-
-            X.append(current_state)
-
-            y.append(current_qs)
-
-
-        self.critic.fit(np.array(X), np.array(y), batch_size=MINIBATCH_SIZE, verbose=0, shuffle=False)
-
-
-        actions = self.actor.model.predict(minibatch[0])
-        grads = self.critic.gradients(minibatch[0], actions)
-
-        self.actor.train(minibatch[0], actions, np.array(grads).reshape((-1, self.act_dim)))
+def update_models(states, actions, critic_target):
+        """ Update actor and critic networks from sampled experience
+        """
+        # Train critic
+        critic.train_on_batch(states, actions, critic_target)
+        # Q-Value Gradients under Current Policy
+        actions = actor.model.predict(states)
+        grads = critic.gradients(states, actions)
+        # Train actor
+        actor.train(states, actions, np.array(grads).reshape((-1, 4)))
         # Transfer weights to target networks at rate Tau
-        self.actor.transfer_weights()
-        self.critic.transfer_weights()
+        actor.transfer_weights()
+        critic.transfer_weights()
 
 
-"""""""""
-          # Update target network counter every episode
-        if terminal_state:
-                self.target_update_counter += 1
+def bellman(rewards, q_values, dones):
+    critic_target = np.asarray(q_values)
+    for i in range(q_values.shape[0]):
+        if dones[i]:
+            critic_target[i] = rewards[i]
+        else:
+            critic_target[i] = rewards[i] + 0.9 * q_values[i]
 
-            # If counter reaches set value, update target network with weights of main network
-        if self.target_update_counter > UPDATE_TARGET_EVERY:
-                self.target_model.set_weights(self.model.get_weights())
-                self.target_update_counter = 0
-
-"""""""""
-
+        return critic_target
 
 
 game = carseour.live()
@@ -146,12 +80,27 @@ global reward
 sector_count = 0
 
 
+def memorize(state, action, reward, done, new_state):
+    """ Store experience in memory buffer
+    """
+    buffer.memorize(state, action, reward, done, new_state)
+
+
+def sample_batch( batch_size):
+    return buffer.sample_batch(batch_size)
+
+count = 0
+
+exploration_noise = OUNoise(4)
 
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     done = False
     index = 0
     current_state = start_screen()
-    noise = OrnsteinUhlenbeckProcess(size=4)
+
+    actions, states, rewards = [], [], []
+    time =0
+
 
 
     if sector_count < 2:
@@ -160,35 +109,25 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         sector_count = 0
 
     while not done:
-        action = np.argmax(actor.get_actor_policy((current_state)))
-        # Clip continuous values to be valid w.r.t. environment
-        action = np.clip(action + noise.generate(time), - 4, 4)
-        new_state, reward = make_move(action)
+        action = actor.get_actor_policy(current_state)
+        action_with_noise = action + exploration_noise.noise()
+        new_state, reward = make_move(action_with_noise)
+        count = count + 1
         current_sector_time = [game.mCurrentSector1Time, game.mCurrentSector2Time, game.mCurrentSector3Time]
+        memorize(current_state, action, reward, done,new_state)
+        if count % 100 == 0:
+            states, actions, rewards, dones, new_states, _ = sample_batch(100)
+            q_values = critic.target_predict([new_states, actor.target_predict(new_states)])
+            critic_target = bellman(rewards, q_values, dones)
+            # Train both networks on sampled batch, update target networks
+            update_models(states, actions, critic_target)
+            time += 1
 
-        if current_sector_time[sector_count] != prev_sector_time[sector_count]:
-            done = True
-            reward = 1
-            prev_sector_time[sector_count - 1] = current_sector_time[sector_count - 1]
-            print(sector_count)
-
-        history.append((current_state, action, reward, new_state, done))
 
 
-        if done:
-            agent.update_replay_memory(history)
-            agent.train(done)
 
-    if epsilon > MIN_EPSILON:
-        epsilon *= EPSILON_DECAY
-        epsilon = max(MIN_EPSILON, epsilon)
 
-    if episode_reward > previous_reward:
-        agent.model.save("C:\\Users\\myles.MSI\\Documents\\models\\models.h5")
 
-    print(episode_reward)
-
-    previous_reward = episode_reward
 
 
 

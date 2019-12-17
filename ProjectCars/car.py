@@ -1,15 +1,28 @@
 
 import carseour
+from directkeys import PressKey, W, A, D,R,S ,ReleaseKey
 import time
 
 game = carseour.live()
 
-while True:
-    print("Speed: " + str(round(game.mSpeed, 1)) + " m/s")
-    print(game.mSteering)
-    print(game.mBrake)
-    print(game.mThrottle)
-    print(game.mCurrentSector1Time)
-    print(game.mCurrentSector2Time)
-    print(game.mCurrentSector3Time)
-    time.sleep(0.5)
+
+
+
+time.sleep(1)
+
+
+PressKey(A)
+ReleaseKey(D)
+ReleaseKey(D)
+print(game.mSteering)
+ReleaseKey(A)
+
+
+print(game.mSteering)
+print(game.mSteering)
+print(game.mSteering)
+
+
+ ## need a function which tranlates speed to press time
+
+

@@ -38,10 +38,10 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 
 
-REPLAY_MEMORY_SIZE = 128000
+REPLAY_MEMORY_SIZE = 12800000
 MIN_REPLAY_MEMORY_SIZE = 1000
 MINIBATCH_SIZE = 512
-UPDATE_TARGET_EVERY = 5
+UPDATE_TARGET_EVERY = 4
 import time
 MODEL_NAME = 'projectcars'
 
@@ -103,7 +103,7 @@ class DQNAgent:
         model.summary()
 
         # Compile the model
-        model.compile(loss="mse", optimizer=Adam(lr=0.002), metrics=['accuracy'])
+        model.compile(loss="mse", optimizer=Adam(lr=0.001), metrics=['accuracy'])
 
         return model
 
@@ -193,11 +193,10 @@ global action
 ##running the program
 
 agent = DQNAgent()
-count =0
 
 game = carseour.live()
 
-prev_sector_time = [-1,-1,-1]
+
 
 
 global reward
@@ -207,17 +206,13 @@ sector_count = 0
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     episode_reward = 0
 
-
-
+    count = 0
     done = False
     history = deque(maxlen=REPLAY_MEMORY_SIZE)
     index = 0
     current_state = start_screen()
 
-    if sector_count < 2:
-        sector_count = sector_count + 1
-    else:
-        sector_count = 0
+
 
 
 
@@ -231,18 +226,20 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
         new_state, reward = make_move(action)
         current_sector_time = [game.mCurrentSector1Time, game.mCurrentSector2Time, game.mCurrentSector3Time]
+        count = count + 1
 
-        if  current_sector_time[sector_count] != prev_sector_time[sector_count] :
-            done = True
-            reward = 1
-            prev_sector_time[sector_count-1] = current_sector_time[sector_count-1]
-            print(sector_count)
+
+
 
 
 
         history.append((current_state, action, reward, new_state, done))
         episode_reward += reward
         current_state = new_state
+
+
+        if count % 300 == 0:
+            done = True
 
 
 

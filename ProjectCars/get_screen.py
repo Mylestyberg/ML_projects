@@ -22,7 +22,6 @@ stopwatch = Stopwatch()
 
 def straight():
     PressKey(W)
-    time.sleep(0.2)
     ReleaseKey(A)
     ReleaseKey(D)
 
@@ -44,7 +43,7 @@ def slow_ya_roll():
     ReleaseKey(D)
 
 
-actions = {0: straight, 1: right, 2: left,3:slow_ya_roll}
+actions_dict = {0: W, 1: A, 2: D,3:S}
 
 
 
@@ -59,30 +58,8 @@ check =0
 
 
 
-def straight():
-    PressKey(W)
-    ReleaseKey(A)
-    ReleaseKey(D)
-
-def left():
-    PressKey(A)
-    ReleaseKey(W)
-    ReleaseKey(D)
-    ReleaseKey(A)
 
 
-def right():
-    PressKey(D)
-    ReleaseKey(A)
-    ReleaseKey(W)
-    ReleaseKey(D)
-
-
-
-def slow_ya_roll():
-    ReleaseKey(W)
-    ReleaseKey(A)
-    ReleaseKey(D)
 
 
 
@@ -132,7 +109,7 @@ def  get_current_state():
 
         if game.mSpeed < 1.4:
            stopwatch.start()
-           if stopwatch.duration > 20:
+           if stopwatch.duration > 10:
              reset_env()
              stopwatch.reset()
 
@@ -177,9 +154,27 @@ def log_speed(speed):
 
 
 
+
+
+def key_function(actions):
+    PressKey(W)
+    PressKey(A)
+    PressKey(D)
+    PressKey(S)
+
+    for x in actions:
+        if (time.time() > x):
+            ReleaseKey(actions_dict[actions.index(x)])
+
+
+
+
+
 def make_move(action,):
-    get_move = actions[action]
-    get_move()
+
+    ## need to make move for continous actions
+    key_function(action)
+
     new_state,  reward = get_current_state()
     return  new_state, reward
 

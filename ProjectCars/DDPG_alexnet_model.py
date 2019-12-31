@@ -19,7 +19,7 @@ from utils.memory_buffer import MemoryBuffer
 
 REPLAY_MEMORY_SIZE = 128000
 MIN_REPLAY_MEMORY_SIZE = 1000
-MINIBATCH_SIZE = 250
+MINIBATCH_SIZE = 64
 UPDATE_TARGET_EVERY = 5
 
 buffer = MemoryBuffer(128000)
@@ -103,20 +103,17 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
 
 
-    if sector_count < 2:
-        sector_count = sector_count + 1
-    else:
-        sector_count = 0
+
 
     while not done:
         action = actor.get_actor_policy(current_state)
-        action_with_noise = action + exploration_noise.noise()
+        action_with_noise = action*10 + abs(exploration_noise.noise())
         new_state, reward = make_move(action_with_noise)
         count = count + 1
-        current_sector_time = [game.mCurrentSector1Time, game.mCurrentSector2Time, game.mCurrentSector3Time]
         memorize(current_state, action, reward, done,new_state)
         if count % 100 == 0:
-            states, actions, rewards, dones, new_states, _ = sample_batch(100)
+            done = True
+            states, actions, rewards, dones, new_states, _ = sample_batch(64)
             q_values = critic.target_predict([new_states, actor.target_predict(new_states)])
             critic_target = bellman(rewards, q_values, dones)
             # Train both networks on sampled batch, update target networks

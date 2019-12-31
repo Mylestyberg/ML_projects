@@ -162,9 +162,20 @@ def key_function(actions):
     PressKey(D)
     PressKey(S)
 
-    for x in actions:
-        if (time.time() > x):
-            ReleaseKey(actions_dict[actions.index(x)])
+
+    count =0
+    while count<5:
+        index = -1
+        for x in np.nditer(actions):
+            index = index + 1
+            if (time.time() > x):
+                ReleaseKey(actions_dict[index])
+                count = count + 1
+
+
+
+
+
 
 
 
